@@ -1,0 +1,4 @@
+model,pipeline,num_samples,avg_context_overlap
+t5-base,vanilla,988,0.9632337780694143
+t5-base,atomic,942,0.9134451683018562
+t5-base,semantic,948,0.8735878671504921

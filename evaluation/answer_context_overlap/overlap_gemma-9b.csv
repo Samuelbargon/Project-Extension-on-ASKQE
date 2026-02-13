@@ -1,0 +1,4 @@
+model,pipeline,num_samples,avg_context_overlap
+gemma-9b,vanilla,93302,0.030149407301022488
+gemma-9b,atomic,81013,0.029476750644958218
+gemma-9b,semantic,85144,0.02743587334398196

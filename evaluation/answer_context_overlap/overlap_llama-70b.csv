@@ -1,0 +1,4 @@
+model,pipeline,num_samples,avg_context_overlap
+llama-70b,vanilla,119012,0.028148422007864753
+llama-70b,atomic,43735,0.02887847261918372
+llama-70b,semantic,131326,0.026841600292402113
