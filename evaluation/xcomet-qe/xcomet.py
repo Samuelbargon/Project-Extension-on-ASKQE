@@ -1,12 +1,25 @@
 from comet import download_model, load_from_checkpoint
 import json
+import sys
+from pathlib import Path
 
+current_dir = Path(__file__).resolve().parent
+code_folder = current_dir.parent.parent / "data" / "code"
+sys.path.append(str(code_folder))
+try:
+    from config_raw_data import LANGUAGES
+    print(f"Success! Imported Languages: {LANGUAGES}")
+except ImportError as e:
+    print(f"Error importing: {e}")
+    print(f"Debug: Tried to look in {code_folder}")
+    sys.exit(1)
+
+languages = LANGUAGES
 
 def main():
     model_path = download_model("Unbabel/XCOMET-XL")
     model = load_from_checkpoint(model_path)
 
-    languages = ["es", "fr", "hi", "tl", "zh"]
     perturbations = ["synonym", "word_order", "spelling", "expansion_noimpact",
                     "intensifier", "expansion_impact", "omission", "alteration"]
     
@@ -17,10 +30,17 @@ def main():
 
             reference_file = f"../QA/llama-70b/en-atomic.jsonl"
             prediction_file = f"../QA/llama-70b/{language}-atomic-{perturbation}.jsonl"
-            output_file = f"en-{language}/{perturbation}.jsonl"
+            
+            output_file_path = Path(f"en-{language}/{perturbation}.jsonl")
+            
+            output_file_path.parent.mkdir(parents=True, exist_ok=True)
+         
 
             try:
-                with open(prediction_file, "r", encoding="utf-8") as pred_file, open(reference_file, "r", encoding="utf-8") as ref_file, open(output_file, "w", encoding="utf-8") as output_path:
+                with open(prediction_file, "r", encoding="utf-8") as pred_file, \
+                     open(reference_file, "r", encoding="utf-8") as ref_file, \
+                     open(output_file_path, "w", encoding="utf-8") as output_path:
+                     
                     for pred_line, ref_line in zip(pred_file, ref_file):
                         datas = []
                         try:

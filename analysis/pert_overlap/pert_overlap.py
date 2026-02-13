@@ -1,9 +1,22 @@
 import os
 import json
 import pandas as pd
+import sys
+from pathlib import Path
 
+current_dir = Path(__file__).resolve().parent
+code_folder = current_dir.parent.parent / "data" / "code"
+sys.path.append(str(code_folder))
+try:
+    from config_raw_data import LANGUAGES
+    print(f"Success! Imported Languages: {LANGUAGES}")
+except ImportError as e:
+    print(f"Error importing: {e}")
+    print(f"Debug: Tried to look in {code_folder}")
+    sys.exit(1)
 
-languages = ["es", "fr", "hi", "tl", "zh"]
+languages = LANGUAGES
+# languages = ["es", "fr", "hi", "tl", "zh"]
 perturbations = ["synonym", "word_order", "spelling", "expansion_noimpact", 
                  "intensifier", "expansion_impact", "omission", "alteration"]
 

@@ -4,10 +4,9 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 import os
 import argparse
 from prompt import prompts
-
+from pathlib import Path  
 
 model_id = "01-ai/Yi-1.5-9B-Chat"
-
 
 def main():
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
@@ -25,6 +24,9 @@ def main():
     parser.add_argument("--prompt", type=str)
     args = parser.parse_args()
 
+    output_file_path = Path(args.output_path)
+    output_file_path.parent.mkdir(parents=True, exist_ok=True)
+
     processed_sentences = set()
 
     if os.path.exists(args.output_path):
@@ -34,7 +36,7 @@ def main():
                 processed_sentences.add(data["id"])
 
     # =========================================== Load Dataset ===========================================
-    with open("input.jsonl", 'r') as f_in, open(args.output_path, 'a') as f_out:
+    with open("input.jsonl", 'r') as f_in, open(output_file_path, 'a', encoding='utf-8') as f_out:
         for line in f_in:
             data = json.loads(line)
             sentence = data.get('en', None)

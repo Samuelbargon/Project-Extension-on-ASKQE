@@ -4,7 +4,7 @@ import json
 import argparse
 import os
 from prompt import prompts
-
+from pathlib import Path 
 
 model_id = "meta-llama/Llama-3.1-70B-Instruct"
 
@@ -24,6 +24,10 @@ def main():
     parser.add_argument("--prompt", type=str)
     args = parser.parse_args()
 
+    if args.output_path:
+        output_file = Path(args.output_path)
+        output_file.parent.mkdir(parents=True, exist_ok=True)
+
     processed_sentences = set()
 
     if os.path.exists(args.output_path):
@@ -33,10 +37,16 @@ def main():
                 processed_sentences.add(data["id"])
 
     # =========================================== Load Dataset ===========================================
+    # We use the Path object or string directly in open()
     with open("input.jsonl", 'r') as f_in, open(args.output_path, 'a') as f_out:
         for line in f_in:
             data = json.loads(line)
             sentence = data.get('en', None)
+            
+            # Optional: Skip already processed IDs based on your processed_sentences set
+            if data.get("id") in processed_sentences:
+                continue
+
             print(sentence)
             if sentence:
                 prompt_template = prompts[args.prompt]

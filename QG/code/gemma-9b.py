@@ -4,6 +4,7 @@ import torch
 import json
 import argparse
 import os
+from pathlib import Path  
 
 own_cache_dir = "/fs/clip-scratch/dayeonki/.cache"
 os.environ["HF_HOME"] = own_cache_dir
@@ -25,8 +26,14 @@ def main():
     parser.add_argument("--prompt", type=str)
     args = parser.parse_args()
 
+    if args.output_path:
+        output_file_path = Path(args.output_path)
+        output_file_path.parent.mkdir(parents=True, exist_ok=True)
+
     # =========================================== Load Dataset ===========================================    
-    with open("input.jsonl", 'r') as f_in, open(args.output_path, 'w') as f_out:
+    with open("input.jsonl", 'r', encoding='utf-8') as f_in, \
+         open(args.output_path, 'w', encoding='utf-8') as f_out:
+         
         for line in f_in:
             data = json.loads(line)
             sentence = data.get('en', None)

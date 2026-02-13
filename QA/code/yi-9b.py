@@ -4,7 +4,7 @@ import os
 import argparse
 from prompt import qa_prompt
 from transformers import AutoTokenizer, AutoModelForCausalLM
-
+from pathlib import Path  # Added for folder management
 
 model_id = "01-ai/Yi-1.5-9B-Chat"
 
@@ -28,7 +28,14 @@ def main():
     pipeline_types = ["vanilla", "atomic", "semantic"]
 
     for pipeline_type in pipeline_types:
-        with open(f"../QG/yi-9b/{pipeline_type}_yi-9b.jsonl", 'r') as f_in, open(f"{args.output_path}-{pipeline_type}.jsonl", 'a') as f_out:
+        full_output_file = f"{args.output_path}-{pipeline_type}.jsonl"
+        output_file_path = Path(full_output_file)
+
+        output_file_path.parent.mkdir(parents=True, exist_ok=True)
+    
+        with open(f"../QG/yi-9b/{pipeline_type}_yi-9b.jsonl", 'r') as f_in, \
+             open(output_file_path, 'a', encoding='utf-8') as f_out:
+             
             for line in f_in:
                 data = json.loads(line)
 

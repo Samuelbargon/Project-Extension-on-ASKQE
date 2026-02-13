@@ -3,7 +3,7 @@ import json
 import argparse
 from prompt import qa_prompt
 from transformers import AutoTokenizer, AutoModelForCausalLM
-
+from pathlib import Path 
 
 model_id = "google/gemma-2-27b-it"
 
@@ -25,7 +25,13 @@ def main():
     pipeline_types = ["vanilla", "atomic", "semantic"]
 
     for pipeline_type in pipeline_types:
-        with open(f"../QG/gemma-27b/{pipeline_type}_gemma-27b.jsonl", 'r') as f_in, open(f"{args.output_path}-{pipeline_type}.jsonl", 'a') as f_out:
+        # Construct the specific output file path
+        actual_output_file = f"{args.output_path}-{pipeline_type}.jsonl"
+        
+        # Ensure the parent directory exists before opening the file for appending
+        Path(actual_output_file).parent.mkdir(parents=True, exist_ok=True)
+
+        with open(f"../QG/gemma-27b/{pipeline_type}_gemma-27b.jsonl", 'r') as f_in, open(actual_output_file, 'a') as f_out:
             for line in f_in:
                 data = json.loads(line)
 

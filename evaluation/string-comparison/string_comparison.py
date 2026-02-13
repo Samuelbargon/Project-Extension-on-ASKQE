@@ -1,11 +1,25 @@
 import json
 import nltk
 from utils import compare_answers
+import sys
+from pathlib import Path
 
 nltk.download("punkt")
 
+current_dir = Path(__file__).resolve().parent
+code_folder = current_dir.parent.parent / "data" / "code"
+sys.path.append(str(code_folder))
+try:
+    from config_raw_data import LANGUAGES
+    print(f"Success! Imported Languages: {LANGUAGES}")
+except ImportError as e:
+    print(f"Error importing: {e}")
+    print(f"Debug: Tried to look in {code_folder}")
+    sys.exit(1)
 
-languages = ["es", "fr", "hi", "tl", "zh"]
+languages = LANGUAGES
+
+# languages = ["es", "fr", "hi", "tl", "zh"]
 pipelines = ["vanilla", "semantic", "atomic"]
 perturbations = ["alteration", "expansion_impact", "expansion_noimpact", "intensifier", "omission", "spelling", "synonym", "word_order"]
 

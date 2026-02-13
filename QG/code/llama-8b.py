@@ -4,7 +4,7 @@ import json
 import argparse
 import os
 from prompt import prompts
-
+from pathlib import Path 
 
 model_id = "meta-llama/Llama-3.1-8B-Instruct"
 
@@ -24,6 +24,10 @@ def main():
     parser.add_argument("--prompt", type=str)
     args = parser.parse_args()
 
+    if args.output_path:
+        output_file_path = Path(args.output_path)
+        output_file_path.parent.mkdir(parents=True, exist_ok=True)
+
     processed_sentences = set()
 
     if os.path.exists(args.output_path):
@@ -33,11 +37,18 @@ def main():
                 processed_sentences.add(data["id"])
 
     # =========================================== Load Dataset ===========================================
-    with open("input.jsonl", 'r') as f_in, open(args.output_path, 'a') as f_out:
+    # Open input for reading and output for appending
+    with open("../../data/processed/en-pt-BR.jsonl", 'r', encoding='utf-8') as f_in, \
+         open(args.output_path, 'a', encoding='utf-8') as f_out:
+        
         for line in f_in:
             data = json.loads(line)
             sentence = data.get('en', None)
-            print(sentence)
+            
+            # Skip if already processed
+            if data.get("id") in processed_sentences:
+                continue
+
             if sentence:
                 prompt_template = prompts[args.prompt]
 
@@ -69,6 +80,7 @@ def main():
                         add_generation_prompt=True,
                         return_tensors="pt",
                     ).to(device)
+                
                 terminators = [
                         tokenizer.eos_token_id,
                         tokenizer.convert_tokens_to_ids("<|eot_id|>")
@@ -93,7 +105,6 @@ def main():
                 f_out.write(json.dumps(data, ensure_ascii=False) + '\n')
             else:
                 pass
-
 
 if __name__ == "__main__":
     main()

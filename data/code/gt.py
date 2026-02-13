@@ -1,8 +1,20 @@
 import json
+import sys
+from pathlib import Path
 from deep_translator import GoogleTranslator
 
+try:
+    # Python automatically looks in the same folder
+    from config_raw_data import LANGUAGES
+    print(f"Success! Imported Languages: {LANGUAGES}")
+except ImportError as e:
+    print(f"Error importing: {e}")
+    print(f"Debug: Tried to look in {code_folder}")
+    sys.exit(1)
 
-languages = ["es", "fr", "hi", "tl", "zh-CN"]
+languages = LANGUAGES
+
+# languages = ["es", "fr", "hi", "tl", "zh-CN"]
 
 
 for language in languages:

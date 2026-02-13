@@ -1,5 +1,6 @@
 import json
 import argparse
+from pathlib import Path
 from comet import download_model, load_from_checkpoint
 
 
@@ -8,11 +9,17 @@ def main():
     parser.add_argument("--input_path", type=str)
     parser.add_argument("--output_path", type=str)
     args = parser.parse_args()
+    
+    out_path = Path(args.output_path)
+    
+    out_path.parent.mkdir(parents=True, exist_ok=True)
 
     model_path = download_model("Unbabel/XCOMET-XL")
     model = load_from_checkpoint(model_path)
 
-    with open(f"{args.input_path}", "r", encoding="utf-8") as f, open(f"{args.output_path}", "w", encoding="utf-8") as output_file:
+    with open(args.input_path, "r", encoding="utf-8") as f, \
+         open(out_path, "w", encoding="utf-8") as output_file:
+         
         for line in f:
             entry = json.loads(line.strip())
 

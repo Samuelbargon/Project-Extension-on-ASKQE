@@ -1,12 +1,23 @@
 from comet import download_model, load_from_checkpoint
 import json
+import sys
+from pathlib import Path
 
+try:
+    # Python automatically looks in the same folder
+    from config_raw_data import LANGUAGES
+    print(f"Success! Imported Languages: {LANGUAGES}")
+except ImportError as e:
+    print(f"Error importing: {e}")
+    print(f"Debug: Tried to look in {code_folder}")
+    sys.exit(1)
 
 def main():
     model_path = download_model("Unbabel/XCOMET-XL")
     model = load_from_checkpoint(model_path)
-
-    languages = ["es", "fr", "hi", "tl", "zh-CN"]
+    
+    languages = LANGUAGES
+    # languages = ["es", "fr", "hi", "tl", "zh-CN"]
     for language in languages:
 
         with open(f"en-{language}-gt.jsonl", "r", encoding="utf-8") as f, open(f"en-{language}-xcomet.jsonl", "w", encoding="utf-8") as output_file:

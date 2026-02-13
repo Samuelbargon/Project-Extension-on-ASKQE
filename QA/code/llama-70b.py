@@ -4,7 +4,7 @@ import os
 import argparse
 from prompt import qa_prompt
 from transformers import AutoTokenizer, AutoModelForCausalLM
-
+from pathlib import Path
 
 model_id = "meta-llama/Llama-3.1-70B-Instruct"
 
@@ -25,6 +25,8 @@ def main():
 
     args = parser.parse_args()
 
+    Path(args.output_path).parent.mkdir(parents=True, exist_ok=True)
+
     processed_sentences = set()
 
     if os.path.exists(args.output_path):
@@ -37,7 +39,13 @@ def main():
     pipeline_types = ["vanilla", "atomic", "semantic"]
 
     for pipeline_type in pipeline_types:
-        with open(f"../QG/llama-70b/{pipeline_type}_llama-70b.jsonl", 'r') as f_in, open(f"{args.output_path}-{pipeline_type}.jsonl", 'a') as f_out:
+        # Construct the specific output file path
+        actual_output_file = f"{args.output_path}-{pipeline_type}.jsonl"
+        
+        # Ensures the directory exists for each suffixed file
+        Path(actual_output_file).parent.mkdir(parents=True, exist_ok=True)
+
+        with open(f"../QG/llama-70b/{pipeline_type}_llama-70b.jsonl", 'r') as f_in, open(actual_output_file, 'a') as f_out:
             for line in f_in:
                 data = json.loads(line)
 

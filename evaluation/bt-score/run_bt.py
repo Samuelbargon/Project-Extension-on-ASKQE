@@ -1,10 +1,22 @@
 import json
 import os
 import torch
+import sys
+from pathlib import Path
 from bert_score import score
 
+current_dir = Path(__file__).resolve().parent
+code_folder = current_dir.parent.parent / "data" / "code"
+sys.path.append(str(code_folder))
+try:
+    from config_raw_data import LANGUAGES
+    print(f"Success! Imported Languages: {LANGUAGES}")
+except ImportError as e:
+    print(f"Error importing: {e}")
+    print(f"Debug: Tried to look in {code_folder}")
+    sys.exit(1)
 
-languages = ["es", "fr", "hi", "tl", "zh"]
+languages = LANGUAGES
 perturbations = ["synonym", "word_order", "spelling", "expansion_noimpact", 
                  "intensifier", "expansion_impact", "omission", "alteration"]
 
@@ -15,7 +27,9 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 for language in languages:
     for perturbation in perturbations:
         jsonl_file = f"{base_path}/en-{language}/bt-{perturbation}.jsonl"
-        output_file = f"en-{language}/bt-{perturbation}_bertscore.jsonl"
+        output_file_path = Path(f"en-{language}/bt-{perturbation}_bertscore.jsonl")
+        
+        output_file_path.parent.mkdir(parents=True, exist_ok=True)
 
         print(f"\nProcessing File: {jsonl_file}")
 
@@ -45,7 +59,8 @@ for language in languages:
 
         average_score = F1.mean().item() if len(F1) > 0 else 0
 
-        with open(output_file, "w", encoding="utf-8") as out_f:
+        # Open the file using the Path object
+        with open(output_file_path, "w", encoding="utf-8") as out_f:
             for item, f1_score in zip(raw_data, F1):
                 item["bertscore_f1"] = f1_score.item()
                 out_f.write(json.dumps(item, ensure_ascii=False) + "\n")

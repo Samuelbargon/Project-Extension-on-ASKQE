@@ -3,7 +3,7 @@ from prompt import prompts
 import torch
 import json
 import argparse
-
+from pathlib import Path  # Added for folder management
 
 model_id = "google/gemma-2-27b-it"
 
@@ -21,8 +21,14 @@ def main():
     parser.add_argument("--prompt", type=str)
     args = parser.parse_args()
 
+    output_file = Path(args.output_path)
+    
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+
     # =========================================== Load Dataset ===========================================    
-    with open("qg_variants.jsonl", 'r') as f_in, open(args.output_path, 'w') as f_out:
+    with open("qg_variants.jsonl", 'r', encoding='utf-8') as f_in, \
+         open(args.output_path, 'w', encoding='utf-8') as f_out:
+         
         for line in f_in:
             data = json.loads(line)
             sentence = data.get('en', None)

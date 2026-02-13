@@ -5,13 +5,27 @@ import csv
 import torch
 from transformers import AutoTokenizer, AutoModel
 import torch.nn.functional as F
+import sys
+from pathlib import Path
 
+current_dir = Path(__file__).resolve().parent
+code_folder = current_dir.parent.parent / "data" / "code"
+sys.path.append(str(code_folder))
+
+try:
+    from config_raw_data import LANGUAGES
+    print(f"Success! Imported Languages: {LANGUAGES}")
+except ImportError as e:
+    print(f"Error importing: {e}")
+    print(f"Debug: Tried to look in {code_folder}")
+    sys.exit(1)
+
+languages = LANGUAGES
 
 def mean_pooling(model_output, attention_mask):
     token_embeddings = model_output[0]
     input_mask_expanded = attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
     return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1), min=1e-9)
-
 
 nltk.download("punkt")
 
@@ -20,18 +34,17 @@ parser.add_argument("--model", type=str)
 parser.add_argument("--output_file", type=str)
 args = parser.parse_args()
 
+output_path = Path(args.output_file)
+output_path.parent.mkdir(parents=True, exist_ok=True)
 
-languages = ["es", "fr", "hi", "tl", "zh"] 
 pipelines = ["vanilla", "semantic", "atomic"]
 perturbations = ["synonym", "word_order", "spelling", "expansion_noimpact",
                  "intensifier", "expansion_impact", "omission", "alteration"]
 
-
 tokenizer = AutoTokenizer.from_pretrained('sentence-transformers/all-MiniLM-L6-v2')
 model = AutoModel.from_pretrained('sentence-transformers/all-MiniLM-L6-v2')
 
-
-with open(args.output_file, mode="w", newline="", encoding="utf-8") as csvfile:
+with open(output_path, mode="w", newline="", encoding="utf-8") as csvfile:
     csv_writer = csv.writer(csvfile)
     csv_writer.writerow(["language", "perturbation", "pipeline", "cosine_similarity", "num_comparison"])
 
@@ -49,7 +62,8 @@ with open(args.output_file, mode="w", newline="", encoding="utf-8") as csvfile:
                 num_comparisons = 0
 
                 try:
-                    with open(predicted_file, "r", encoding="utf-8") as pred_file, open(reference_file, "r", encoding="utf-8") as ref_file:
+                    with open(predicted_file, "r", encoding="utf-8") as pred_file, \
+                         open(reference_file, "r", encoding="utf-8") as ref_file:
                         for pred_line, ref_line in zip(pred_file, ref_file):
                             try:
                                 pred_data = json.loads(pred_line)
@@ -74,6 +88,7 @@ with open(args.output_file, mode="w", newline="", encoding="utf-8") as csvfile:
                                     continue
                                 if not predicted_answers or not reference_answers or len(predicted_answers) != len(reference_answers):
                                     continue
+                                
                                 for pred, ref in zip(predicted_answers, reference_answers):
                                     if not isinstance(pred, str) or not isinstance(ref, str):
                                         continue
@@ -114,8 +129,8 @@ with open(args.output_file, mode="w", newline="", encoding="utf-8") as csvfile:
                     print(f"Cosine Similarity: {avg_cosine_similarity:.3f}")
                     print("=" * 80)
 
-                    with open(args.output_file, mode="a", newline="", encoding="utf-8") as csvfile:
-                        csv_writer = csv.writer(csvfile)
+                    with open(output_path, mode="a", newline="", encoding="utf-8") as append_csvfile:
+                        csv_writer = csv.writer(append_csvfile)
                         csv_writer.writerow([language, perturbation, pipeline, avg_cosine_similarity, num_comparisons])
 
                 else:
